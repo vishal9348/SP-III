@@ -1,0 +1,167 @@
+[
+    {
+        "name": "applicantName",
+        "label": "Applicant Full Name",
+        "type": "text",
+        "required": true,
+        "placeholder": "Enter your full name as per ID proof",
+        "validation": {
+            "minLength": 3,
+            "maxLength": 100
+        }
+    },
+    {
+        "name": "loanAmount",
+        "label": "Loan Amount Requested",
+        "type": "number",
+        "required": true,
+        "placeholder": "Enter amount in INR",
+        "validation": {
+            "min": 10000,
+            "max": 5000000
+        }
+    },
+    {
+        "name": "loanType",
+        "label": "Type of Loan",
+        "type": "select",
+        "required": true,
+        "options": [
+            "Personal Loan",
+            "Home Loan",
+            "Car Loan",
+            "Education Loan",
+            "Business Loan",
+            "Gold Loan"
+        ]
+    },
+    {
+        "name": "employmentType",
+        "label": "Employment Type",
+        "type": "select",
+        "required": true,
+        "options": [
+            "Salaried",
+            "Self-Employed",
+            "Business Owner",
+            "Professional",
+            "Retired"
+        ]
+    },
+    {
+        "name": "monthlyIncome",
+        "label": "Monthly Income (INR)",
+        "type": "number",
+        "required": true,
+        "placeholder": "Enter your monthly income",
+        "validation": {
+            "min": 15000,
+            "max": 500000
+        }
+    },
+    {
+        "name": "existingEmi",
+        "label": "Existing EMI per Month (INR)",
+        "type": "number",
+        "required": false,
+        "placeholder": "Enter existing EMI if any",
+        "validation": {
+            "min": 0,
+            "max": 200000
+        }
+    },
+    {
+        "name": "loanTenure",
+        "label": "Loan Tenure (Years)",
+        "type": "select",
+        "required": true,
+        "options": [
+            "1 Year",
+            "2 Years",
+            "3 Years",
+            "4 Years",
+            "5 Years",
+            "7 Years",
+            "10 Years"
+        ]
+    },
+    {
+        "name": "purpose",
+        "label": "Purpose of Loan",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "Briefly explain why you need this loan",
+        "validation": {
+            "minLength": 10,
+            "maxLength": 500
+        }
+    },
+    {
+        "name": "panCard",
+        "label": "PAN Card Number",
+        "type": "text",
+        "required": true,
+        "placeholder": "Enter PAN card number",
+        "validation": {
+            "pattern": "^[A-Z]{5}[0-9]{4}[A-Z]{1}$",
+            "minLength": 10,
+            "maxLength": 10
+        }
+    },
+    {
+        "name": "aadharNumber",
+        "label": "Aadhar Number",
+        "type": "text",
+        "required": true,
+        "placeholder": "Enter 12-digit Aadhar number",
+        "validation": {
+            "pattern": "^[0-9]{12}$",
+            "minLength": 12,
+            "maxLength": 12
+        }
+    },
+    {
+        "name": "email",
+        "label": "Email Address",
+        "type": "email",
+        "required": true,
+        "placeholder": "Enter your email",
+        "validation": {
+            "pattern": "^[A-Za-z0-9+_.-]+@(.+)$"
+        }
+    },
+    {
+        "name": "mobileNumber",
+        "label": "Mobile Number",
+        "type": "tel",
+        "required": true,
+        "placeholder": "Enter 10-digit mobile number",
+        "validation": {
+            "pattern": "^[0-9]{10}$",
+            "minLength": 10,
+            "maxLength": 10
+        }
+    },
+    {
+        "name": "address",
+        "label": "Residential Address",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "Enter your complete address",
+        "validation": {
+            "minLength": 10,
+            "maxLength": 300
+        }
+    },
+    {
+        "name": "creditScore",
+        "label": "Credit Score (if known)",
+        "type": "number",
+        "required": false,
+        "placeholder": "Enter CIBIL score (300-900)",
+        "validation": {
+            "min": 300,
+            "max": 900
+        }
+    }
+]

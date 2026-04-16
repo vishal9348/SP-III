@@ -1,0 +1,62 @@
+[
+    {
+        "name": "fullName",
+        "label": "Full Name",
+        "type": "text",
+        "required": true,
+        "placeholder": "Enter your full name",
+        "validation": {
+            "minLength": 2,
+            "maxLength": 100
+        }
+    },
+    {
+        "name": "age",
+        "label": "Age",
+        "type": "number",
+        "required": true,
+        "validation": {
+            "min": 18,
+            "max": 65
+        }
+    },
+    {
+        "name": "department",
+        "label": "Department",
+        "type": "select",
+        "required": true,
+        "options": [
+            "IT",
+            "HR",
+            "Finance",
+            "Marketing",
+            "Operations"
+        ]
+    },
+    {
+        "name": "joinDate",
+        "label": "Joining Date",
+        "type": "date",
+        "required": true
+    },
+    {
+        "name": "skills",
+        "label": "Skills",
+        "type": "textarea",
+        "required": false,
+        "placeholder": "List your skills separated by commas"
+    },
+    {
+        "name": "test",
+        "label": "Test",
+        "type": "select",
+        "required": true,
+        "options": [
+            "IT",
+            "HR",
+            "Finance",
+            "Marketing",
+            "Operations"
+        ]
+    }
+]

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+             targetNamespace="http://bpmn.io/schema/bpmn">
+
+  <process id="expense-approval-process" name="Expense Approval Workflow" isExecutable="true" camunda:historyTimeToLive="30">
+    <startEvent id="start-event" name="Expense Submitted" />
+    <sequenceFlow id="flow1" sourceRef="start-event" targetRef="exclusive-gateway" />
+    <exclusiveGateway id="exclusive-gateway" name="Amount > 1000?" />
+    <sequenceFlow id="flow-small" sourceRef="exclusive-gateway" targetRef="manager-approval">
+      <conditionExpression>${amount &lt;= 1000}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow-large" sourceRef="exclusive-gateway" targetRef="director-approval">
+      <conditionExpression>${amount &gt; 1000}</conditionExpression>
+    </sequenceFlow>
+    <userTask id="manager-approval" name="Manager Approval" camunda:assignee="manager" />
+    <userTask id="director-approval" name="Director Approval" camunda:assignee="director" />
+    <sequenceFlow id="flow3" sourceRef="manager-approval" targetRef="end-event" />
+    <sequenceFlow id="flow4" sourceRef="director-approval" targetRef="end-event" />
+    <endEvent id="end-event" name="Expense Processed" />
+  </process>
+
+  <!-- BPMN Diagram - This enables visual rendering in Cockpit -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_expense-approval">
+    <bpmndi:BPMNPlane id="BPMNPlane_expense-approval" bpmnElement="expense-approval-process">
+
+      <!-- Start Event Shape -->
+      <bpmndi:BPMNShape id="start-event-di" bpmnElement="start-event">
+        <dc:Bounds x="100" y="80" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="80" y="120" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Exclusive Gateway Shape -->
+      <bpmndi:BPMNShape id="exclusive-gateway-di" bpmnElement="exclusive-gateway">
+        <dc:Bounds x="200" y="75" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="190" y="130" width="70" height="30" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Manager Approval Task Shape -->
+      <bpmndi:BPMNShape id="manager-approval-di" bpmnElement="manager-approval">
+        <dc:Bounds x="320" y="60" width="100" height="80" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="335" y="95" width="70" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Director Approval Task Shape -->
+      <bpmndi:BPMNShape id="director-approval-di" bpmnElement="director-approval">
+        <dc:Bounds x="320" y="170" width="100" height="80" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="335" y="205" width="70" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- End Event Shape -->
+      <bpmndi:BPMNShape id="end-event-di" bpmnElement="end-event">
+        <dc:Bounds x="500" y="80" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="485" y="120" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Sequence Flow Edges -->
+      <bpmndi:BPMNEdge id="flow1-di" bpmnElement="flow1">
+        <di:waypoint x="136" y="98" />
+        <di:waypoint x="200" y="100" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="flow-small-di" bpmnElement="flow-small">
+        <di:waypoint x="250" y="100" />
+        <di:waypoint x="320" y="100" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="flow-large-di" bpmnElement="flow-large">
+        <di:waypoint x="225" y="125" />
+        <di:waypoint x="225" y="210" />
+        <di:waypoint x="320" y="210" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="flow3-di" bpmnElement="flow3">
+        <di:waypoint x="420" y="100" />
+        <di:waypoint x="500" y="98" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="flow4-di" bpmnElement="flow4">
+        <di:waypoint x="420" y="210" />
+        <di:waypoint x="518" y="98" />
+        <di:waypoint x="500" y="98" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</definitions>

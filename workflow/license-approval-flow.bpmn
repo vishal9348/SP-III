@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+             targetNamespace="http://bpmn.io/schema/bpmn">
+
+    <process id="license-approval-flow" name="License Approval Workflow" isExecutable="true" camunda:historyTimeToLive="30">
+
+        <startEvent id="start-event" name="License Application Submitted" />
+
+        <sequenceFlow id="flow1" sourceRef="start-event" targetRef="maker-task" />
+
+        <!-- Level 1: Maker Approval -->
+        <userTask id="maker-task" name="Maker Review" camunda:assignee="maker" camunda:priority="50">
+            <extensionElements>
+                <camunda:formData>
+                    <camunda:formField id="action" label="Action" type="string" />
+                    <camunda:formField id="comments" label="Comments" type="string" />
+                </camunda:formData>
+            </extensionElements>
+        </userTask>
+
+        <sequenceFlow id="maker-to-decision" sourceRef="maker-task" targetRef="maker-decision" />
+
+        <!-- Decision Gateway after Maker -->
+        <exclusiveGateway id="maker-decision" name="Maker Decision" />
+
+        <sequenceFlow id="maker-approved" sourceRef="maker-decision" targetRef="checker-task">
+            <conditionExpression xsi:type="tFormalExpression">${makerAction == 'approve'}</conditionExpression>
+        </sequenceFlow>
+
+        <sequenceFlow id="maker-rejected" sourceRef="maker-decision" targetRef="end-rejected">
+            <conditionExpression xsi:type="tFormalExpression">${makerAction == 'reject'}</conditionExpression>
+        </sequenceFlow>
+
+        <!-- Level 2: Checker Approval -->
+        <userTask id="checker-task" name="Checker Review" camunda:assignee="checker" camunda:priority="50">
+            <extensionElements>
+                <camunda:formData>
+                    <camunda:formField id="action" label="Action" type="string" />
+                    <camunda:formField id="comments" label="Comments" type="string" />
+                </camunda:formData>
+            </extensionElements>
+        </userTask>
+
+        <sequenceFlow id="checker-to-decision" sourceRef="checker-task" targetRef="checker-decision" />
+
+        <!-- Decision Gateway after Checker -->
+        <exclusiveGateway id="checker-decision" name="Checker Decision" />
+
+        <sequenceFlow id="checker-approved" sourceRef="checker-decision" targetRef="cochecker-task">
+            <conditionExpression xsi:type="tFormalExpression">${checkerAction == 'approve'}</conditionExpression>
+        </sequenceFlow>
+
+        <sequenceFlow id="checker-rejected" sourceRef="checker-decision" targetRef="end-rejected">
+            <conditionExpression xsi:type="tFormalExpression">${checkerAction == 'reject'}</conditionExpression>
+        </sequenceFlow>
+
+        <sequenceFlow id="checker-sendback" sourceRef="checker-decision" targetRef="maker-task">
+            <conditionExpression xsi:type="tFormalExpression">${checkerAction == 'send_back_to_maker'}</conditionExpression>
+        </sequenceFlow>
+
+        <!-- Level 3: CoChecker Approval -->
+        <userTask id="cochecker-task" name="CoChecker Review" camunda:assignee="cochecker" camunda:priority="50">
+            <extensionElements>
+                <camunda:formData>
+                    <camunda:formField id="action" label="Action" type="string" />
+                    <camunda:formField id="comments" label="Comments" type="string" />
+                </camunda:formData>
+            </extensionElements>
+        </userTask>
+
+        <sequenceFlow id="cochecker-to-decision" sourceRef="cochecker-task" targetRef="cochecker-decision" />
+
+        <!-- Decision Gateway after CoChecker -->
+        <exclusiveGateway id="cochecker-decision" name="CoChecker Decision" />
+
+        <sequenceFlow id="cochecker-approved" sourceRef="cochecker-decision" targetRef="admin-task">
+            <conditionExpression xsi:type="tFormalExpression">${cocheckerAction == 'approve'}</conditionExpression>
+        </sequenceFlow>
+
+        <sequenceFlow id="cochecker-rejected" sourceRef="cochecker-decision" targetRef="end-rejected">
+            <conditionExpression xsi:type="tFormalExpression">${cocheckerAction == 'reject'}</conditionExpression>
+        </sequenceFlow>
+
+        <sequenceFlow id="cochecker-sendback" sourceRef="cochecker-decision" targetRef="checker-task">
+            <conditionExpression xsi:type="tFormalExpression">${cocheckerAction == 'send_back_to_checker'}</conditionExpression>
+        </sequenceFlow>
+
+        <!-- Level 4: Admin Final Approval -->
+        <userTask id="admin-task" name="Admin Final Approval" camunda:assignee="admin" camunda:priority="50">
+            <extensionElements>
+                <camunda:formData>
+                    <camunda:formField id="action" label="Action" type="string" />
+                    <camunda:formField id="comments" label="Comments" type="string" />
+                </camunda:formData>
+            </extensionElements>
+        </userTask>
+
+        <sequenceFlow id="admin-to-end" sourceRef="admin-task" targetRef="end-approved" />
+
+        <!-- End Events -->
+        <endEvent id="end-approved" name="License Approved" />
+        <endEvent id="end-rejected" name="License Rejected" />
+
+    </process>
+
+    <!-- BPMN Diagram -->
+    <bpmndi:BPMNDiagram id="BPMNDiagram_license">
+        <bpmndi:BPMNPlane id="BPMNPlane_license" bpmnElement="license-approval-flow">
+
+            <!-- Start Event -->
+            <bpmndi:BPMNShape id="start-event-di" bpmnElement="start-event">
+                <dc:Bounds x="80" y="100" width="36" height="36" />
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds x="65" y="140" width="70" height="14" />
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+
+            <!-- Maker Task -->
+            <bpmndi:BPMNShape id="maker-task-di" bpmnElement="maker-task">
+                <dc:Bounds x="180" y="80" width="100" height="80" />
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds x="200" y="115" width="60" height="14" />
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+
+            <!-- Maker Decision -->
+            <bpmndi:BPMNShape id="maker-decision-di" bpmnElement="maker-decision">
+                <dc:Bounds x="340" y="75" width="50" height="50" />
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds x="340" y="130" width="50" height="14" />
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+
+            <!-- Checker Task -->
+            <bpmndi:BPMNShape id="checker-task-di" bpmnElement="checker-task">
+                <dc:Bounds x="180" y="220" width="100" height="80" />
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds x="200" y="255" width="60" height="14" />
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+
+            <!-- Checker Decision -->
+            <bpmndi:BPMNShape id="checker-decision-di" bpmnElement="checker-decision">
+                <dc:Bounds x="340" y="215" width="50" height="50" />
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds x="340" y="270" width="50" height="14" />
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+
+            <!-- CoChecker Task -->
+            <bpmndi:BPMNShape id="cochecker-task-di" bpmnElement="cochecker-task">
+                <dc:Bounds x="460" y="80" width="100" height="80" />
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds x="475" y="115" width="70" height="14" />
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+
+            <!-- CoChecker Decision -->
+            <bpmndi:BPMNShape id="cochecker-decision-di" bpmnElement="cochecker-decision">
+                <dc:Bounds x="620" y="75" width="50" height="50" />
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds x="615" y="130" width="60" height="14" />
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+
+            <!-- Admin Task -->
+            <bpmndi:BPMNShape id="admin-task-di" bpmnElement="admin-task">
+                <dc:Bounds x="740" y="80" width="100" height="80" />
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds x="760" y="115" width="60" height="14" />
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+
+            <!-- End Approved -->
+            <bpmndi:BPMNShape id="end-approved-di" bpmnElement="end-approved">
+                <dc:Bounds x="900" y="100" width="36" height="36" />
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds x="890" y="140" width="60" height="14" />
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+
+            <!-- End Rejected -->
+            <bpmndi:BPMNShape id="end-rejected-di" bpmnElement="end-rejected">
+                <dc:Bounds x="900" y="300" width="36" height="36" />
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds x="890" y="340" width="60" height="14" />
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+
+            <!-- Edges -->
+            <bpmndi:BPMNEdge id="flow1-di" bpmnElement="flow1">
+                <di:waypoint x="116" y="118" />
+                <di:waypoint x="180" y="120" />
+            </bpmndi:BPMNEdge>
+
+            <bpmndi:BPMNEdge id="maker-to-decision-di" bpmnElement="maker-to-decision">
+                <di:waypoint x="280" y="120" />
+                <di:waypoint x="340" y="100" />
+            </bpmndi:BPMNEdge>
+
+            <bpmndi:BPMNEdge id="maker-approved-di" bpmnElement="maker-approved">
+                <di:waypoint x="365" y="125" />
+                <di:waypoint x="230" y="220" />
+                <di:waypoint x="230" y="220" />
+            </bpmndi:BPMNEdge>
+
+            <bpmndi:BPMNEdge id="maker-rejected-di" bpmnElement="maker-rejected">
+                <di:waypoint x="365" y="125" />
+                <di:waypoint x="918" y="318" />
+            </bpmndi:BPMNEdge>
+
+            <bpmndi:BPMNEdge id="checker-to-decision-di" bpmnElement="checker-to-decision">
+                <di:waypoint x="280" y="260" />
+                <di:waypoint x="340" y="240" />
+            </bpmndi:BPMNEdge>
+
+            <bpmndi:BPMNEdge id="checker-approved-di" bpmnElement="checker-approved">
+                <di:waypoint x="390" y="240" />
+                <di:waypoint x="460" y="120" />
+            </bpmndi:BPMNEdge>
+
+            <bpmndi:BPMNEdge id="checker-rejected-di" bpmnElement="checker-rejected">
+                <di:waypoint x="365" y="265" />
+                <di:waypoint x="918" y="318" />
+            </bpmndi:BPMNEdge>
+
+            <bpmndi:BPMNEdge id="checker-sendback-di" bpmnElement="checker-sendback">
+                <di:waypoint x="340" y="240" />
+                <di:waypoint x="230" y="160" />
+            </bpmndi:BPMNEdge>
+
+            <bpmndi:BPMNEdge id="cochecker-to-decision-di" bpmnElement="cochecker-to-decision">
+                <di:waypoint x="560" y="120" />
+                <di:waypoint x="620" y="100" />
+            </bpmndi:BPMNEdge>
+
+            <bpmndi:BPMNEdge id="cochecker-approved-di" bpmnElement="cochecker-approved">
+                <di:waypoint x="670" y="100" />
+                <di:waypoint x="740" y="120" />
+            </bpmndi:BPMNEdge>
+
+            <bpmndi:BPMNEdge id="cochecker-rejected-di" bpmnElement="cochecker-rejected">
+                <di:waypoint x="645" y="125" />
+                <di:waypoint x="918" y="318" />
+            </bpmndi:BPMNEdge>
+
+            <bpmndi:BPMNEdge id="cochecker-sendback-di" bpmnElement="cochecker-sendback">
+                <di:waypoint x="645" y="125" />
+                <di:waypoint x="390" y="240" />
+                <di:waypoint x="280" y="240" />
+            </bpmndi:BPMNEdge>
+
+            <bpmndi:BPMNEdge id="admin-to-end-di" bpmnElement="admin-to-end">
+                <di:waypoint x="840" y="120" />
+                <di:waypoint x="900" y="118" />
+            </bpmndi:BPMNEdge>
+
+        </bpmndi:BPMNPlane>
+    </bpmndi:BPMNDiagram>
+
+</definitions>

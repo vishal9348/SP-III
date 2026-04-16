@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" targetNamespace="http://bpmn.io/schema/bpmn">
+  <process id="expense-approval-process" name="Expense Approval Workflow" isExecutable="true" camunda:historyTimeToLive="30">
+    <startEvent id="start-event" name="Expense Submitted" />
+    <sequenceFlow id="flow1" sourceRef="start-event" targetRef="exclusive-gateway" />
+    <exclusiveGateway id="exclusive-gateway" name="Amount Greater Than 1000" />
+    <sequenceFlow id="flow-small" sourceRef="exclusive-gateway" targetRef="manager-approval">
+      <conditionExpression>${amount &lt;= 1000}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow-large" sourceRef="exclusive-gateway" targetRef="director-approval">
+      <conditionExpression>${amount &gt; 1000}</conditionExpression>
+    </sequenceFlow>
+    <userTask id="manager-approval" name="Manager Approval" camunda:assignee="manager" />
+    <userTask id="director-approval" name="Director Approval" camunda:assignee="director" />
+    <sequenceFlow id="flow3" sourceRef="manager-approval" targetRef="end-event" />
+    <sequenceFlow id="flow4" sourceRef="director-approval" targetRef="end-event" />
+    <endEvent id="end-event" name="Expense Processed" />
+  </process>
+</definitions>
