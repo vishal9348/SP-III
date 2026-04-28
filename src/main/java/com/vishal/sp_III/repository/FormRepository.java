@@ -10,4 +10,16 @@ public interface FormRepository extends JpaRepository<FormData, Long> {
     Optional<FormData> findByProcessInstanceId(String processInstanceId);
     List<FormData> findByStatus(String status);
     List<FormData> findByFormTypeId(Long formTypeId);
+
+    // Find all sub-forms for a master form
+    List<FormData> findByParentFormDataId(Long parentFormDataId);
+
+    // Find sub-form by department name
+    Optional<FormData> findByParentFormDataIdAndDepartmentName(Long parentFormDataId, String departmentName);
+
+    // Find all sub-forms with specific status
+    List<FormData> findByParentFormDataIdAndStatus(Long parentFormDataId, String status);
+
+    // Count sub-forms by status
+    long countByParentFormDataIdAndStatus(Long parentFormDataId, String status);
 }

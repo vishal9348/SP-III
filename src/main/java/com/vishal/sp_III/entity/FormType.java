@@ -18,4 +18,9 @@ public class FormType {
 
     @Lob
     private String schemaJson;
+
+    private Boolean isMasterForm = false;  // true for master form that contains sub-forms
+    private Long parentFormTypeId;         // For sub-forms, reference to master form
+    private String associatedWorkflowKey;  // Workflow key for this form type
+    private Integer approvalLevel;          // Number of approval levels
 }

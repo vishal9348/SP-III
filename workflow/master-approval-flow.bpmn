@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+             targetNamespace="http://bpmn.io/schema/bpmn">
+
+    <process id="master-approval-flow" name="Master Multi-Department Approval Flow" isExecutable="true" camunda:historyTimeToLive="30">
+
+        <startEvent id="start-event" name="Master Form Submitted" />
+
+        <sequenceFlow id="flow1" sourceRef="start-event" targetRef="prepare-subforms" />
+
+        <scriptTask id="prepare-subforms" name="Prepare Sub-Forms" scriptFormat="groovy">
+            <script>
+                def subForms = execution.getVariable("subForms");
+                execution.setVariable("subFormsList", subForms);
+                execution.setVariable("subFormsCount", subForms.size());
+                execution.setVariable("completedCount", 0);
+                execution.setVariable("departmentStatus", [:]);
+                execution.setVariable("allDepartmentsApproved", false);
+            </script>
+        </scriptTask>
+
+        <sequenceFlow id="flow2" sourceRef="prepare-subforms" targetRef="multi-instance-subprocess" />
+
+        <subProcess id="multi-instance-subprocess" name="Parallel Department Approvals" camunda:asyncBefore="true">
+
+            <multiInstanceLoopCharacteristics isSequential="false"
+                                              camunda:collection="subFormsList"
+                                              camunda:elementVariable="currentSubForm">
+                <completionCondition>${completedCount == subFormsCount}</completionCondition>
+            </multiInstanceLoopCharacteristics>
+
+            <startEvent id="sub-start" name="Sub-Form Start" />
+
+            <sequenceFlow id="sub-flow1" sourceRef="sub-start" targetRef="call-activity" />
+
+            <callActivity id="call-activity" name="Call ${currentSubForm.departmentName} Workflow"
+                          calledElement="${currentSubForm.workflowKey}">
+                <extensionElements>
+                    <camunda:in source="currentSubForm" target="subFormData" />
+                    <camunda:in source="processInstanceId" target="parentProcessId" />
+                    <camunda:out source="subFormStatus" target="subFormStatus" />
+                    <camunda:out source="subFormApproved" target="subFormApproved" />
+                </extensionElements>
+            </callActivity>
+
+            <sequenceFlow id="sub-flow2" sourceRef="call-activity" targetRef="sub-end" />
+
+            <endEvent id="sub-end" name="Sub-Form Complete">
+                <extensionElements>
+                    <camunda:executionListener event="end">
+                        <camunda:script scriptFormat="groovy">
+                            def completed = execution.getVariable("completedCount") ?: 0;
+                            execution.setVariable("completedCount", completed + 1);
+
+                            def deptStatus = execution.getVariable("departmentStatus") ?: [:];
+                            def currentSubForm = execution.getVariable("currentSubForm");
+                            def subFormApproved = execution.getVariable("subFormApproved");
+
+                            deptStatus[currentSubForm.departmentName] = subFormApproved ? "APPROVED" : "REJECTED";
+                            execution.setVariable("departmentStatus", deptStatus);
+
+                            if (!subFormApproved) {
+                                execution.setVariable("rejected", true);
+                            }
+                        </camunda:script>
+                    </camunda:executionListener>
+                </extensionElements>
+            </endEvent>
+
+        </subProcess>
+
+        <sequenceFlow id="flow3" sourceRef="multi-instance-subprocess" targetRef="check-all-approved" />
+
+        <exclusiveGateway id="check-all-approved" name="All Approved?" />
+
+        <sequenceFlow id="all-approved" sourceRef="check-all-approved" targetRef="admin-approval-task">
+            <conditionExpression>${completedCount == subFormsCount &amp;&amp; rejected != true}</conditionExpression>
+        </sequenceFlow>
+
+        <sequenceFlow id="any-rejected" sourceRef="check-all-approved" targetRef="end-rejected">
+            <conditionExpression>${rejected == true}</conditionExpression>
+        </sequenceFlow>
+
+        <userTask id="admin-approval-task" name="Admin Final Approval" camunda:assignee="admin" camunda:priority="50">
+            <extensionElements>
+                <camunda:formData>
+                    <camunda:formField id="action" label="Action" type="string" />
+                    <camunda:formField id="comments" label="Comments" type="string" />
+                </camunda:formData>
+            </extensionElements>
+        </userTask>
+
+        <sequenceFlow id="admin-to-end" sourceRef="admin-approval-task" targetRef="end-approved" />
+
+        <endEvent id="end-approved" name="All Forms Approved" />
+        <endEvent id="end-rejected" name="Some Forms Rejected" />
+
+    </process>
+
+    <bpmndi:BPMNDiagram id="BPMNDiagram_master">
+        <bpmndi:BPMNPlane id="BPMNPlane_master" bpmnElement="master-approval-flow">
+
+            <bpmndi:BPMNShape id="start-event-di" bpmnElement="start-event">
+                <dc:Bounds x="50" y="100" width="36" height="36" />
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds x="40" y="140" width="60" height="14" />
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+
+            <bpmndi:BPMNShape id="prepare-subforms-di" bpmnElement="prepare-subforms">
+                <dc:Bounds x="150" y="80" width="100" height="80" />
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds x="165" y="115" width="70" height="14" />
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+
+            <bpmndi:BPMNShape id="multi-instance-subprocess-di" bpmnElement="multi-instance-subprocess">
+                <dc:Bounds x="320" y="60" width="200" height="200" />
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds x="350" y="155" width="100" height="14" />
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+
+            <bpmndi:BPMNShape id="check-all-approved-di" bpmnElement="check-all-approved">
+                <dc:Bounds x="580" y="85" width="50" height="50" />
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds x="585" y="140" width="50" height="14" />
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+
+            <bpmndi:BPMNShape id="admin-approval-task-di" bpmnElement="admin-approval-task">
+                <dc:Bounds x="690" y="70" width="100" height="80" />
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds x="705" y="105" width="70" height="14" />
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+
+            <bpmndi:BPMNShape id="end-approved-di" bpmnElement="end-approved">
+                <dc:Bounds x="850" y="85" width="36" height="36" />
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds x="840" y="125" width="60" height="14" />
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+
+            <bpmndi:BPMNShape id="end-rejected-di" bpmnElement="end-rejected">
+                <dc:Bounds x="690" y="200" width="36" height="36" />
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds x="680" y="240" width="60" height="14" />
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+
+            <bpmndi:BPMNEdge id="flow1-di" bpmnElement="flow1">
+                <di:waypoint x="86" y="118" />
+                <di:waypoint x="150" y="120" />
+            </bpmndi:BPMNEdge>
+
+            <bpmndi:BPMNEdge id="flow2-di" bpmnElement="flow2">
+                <di:waypoint x="250" y="120" />
+                <di:waypoint x="320" y="160" />
+            </bpmndi:BPMNEdge>
+
+            <bpmndi:BPMNEdge id="flow3-di" bpmnElement="flow3">
+                <di:waypoint x="520" y="160" />
+                <di:waypoint x="580" y="110" />
+            </bpmndi:BPMNEdge>
+
+            <bpmndi:BPMNEdge id="all-approved-di" bpmnElement="all-approved">
+                <di:waypoint x="630" y="110" />
+                <di:waypoint x="690" y="110" />
+            </bpmndi:BPMNEdge>
+
+            <bpmndi:BPMNEdge id="any-rejected-di" bpmnElement="any-rejected">
+                <di:waypoint x="605" y="135" />
+                <di:waypoint x="708" y="218" />
+            </bpmndi:BPMNEdge>
+
+            <bpmndi:BPMNEdge id="admin-to-end-di" bpmnElement="admin-to-end">
+                <di:waypoint x="790" y="110" />
+                <di:waypoint x="850" y="103" />
+            </bpmndi:BPMNEdge>
+
+        </bpmndi:BPMNPlane>
+    </bpmndi:BPMNDiagram>
+
+</definitions>

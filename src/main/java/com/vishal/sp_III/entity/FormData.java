@@ -29,4 +29,13 @@ public class FormData {
 
     @Column(columnDefinition = "TEXT")
     private String approvalSteps; // Store approval steps as JSON
+
+    private String currentTaskKey;
+    private String currentTaskName;
+
+    // New fields for multi-department support
+    private Long parentFormDataId;      // For sub-forms, reference to master form
+    private String departmentName;       // Department this sub-form belongs to
+    private String departmentRole;       // maker, checker, cochecker for this department
+    private String subFormKey;           // Unique key for this sub-form within master
 }

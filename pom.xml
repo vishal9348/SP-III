@@ -109,6 +109,14 @@
 			<version>2.5.0</version>
 		</dependency>
 
+<!--		to handle parallel execution workflow -->
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-all</artifactId>
+			<version>3.0.19</version>
+			<type>pom</type>
+		</dependency>
+
 	</dependencies>
 
 	<build>
